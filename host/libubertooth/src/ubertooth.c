@@ -226,15 +226,8 @@ static void* poll_thread_main(void* arg __attribute__((unused)))
 	int r = 0;
 
 	while (!do_exit) {
-		struct timeval tv = { 1, 0 };
 		r = libusb_handle_events_completed(NULL, NULL);
-		//r = libusb_handle_events_timeout(NULL, &tv);
-		if (r < 0) {
-			//do_exit = 1;
-      printf("Exiting! Not! %d\n",r);
-			//break;
-		}
-		//usleep(1);
+
 	}
 
 	return NULL;
@@ -278,19 +271,6 @@ void ubertooth_bulk_wait(ubertooth_t* ut)
 
 int ubertooth_bulk_receive(ubertooth_t* ut, rx_callback cb, void* cb_args)
 {
-	/*if (!fifo_empty(ut->fifo)) {
-		(*cb)(ut, cb_args);
-		if(ut->stop_ubertooth) {
-			if(ut->rx_xfer)
-				libusb_cancel_transfer(ut->rx_xfer);
-			return 1;
-		}
-		fflush(stderr);
-		return 0;
-	} else {
-		usleep(1);
-		return -1;
-	}*/
 
   int err = wait_for_pkt(ut->fifo, -1);
   if (err == 0)

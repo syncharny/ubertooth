@@ -74,11 +74,11 @@ int main(int argc, char* argv[])
 	uint8_t uap = 0;
 	uint8_t channel = 39;
 
-  // Flush stdout always
-  setvbuf(stdout, NULL, _IONBF, 0);
+    // Flush stdout always
+    setvbuf(stdout, NULL, _IONBF, 0);
 	ubertooth_t* ut = ubertooth_init();
 
-  signal(SIGINT, sig_handler);
+    signal(SIGUSR1, sig_handler);
 
 	while ((opt=getopt(argc,argv,"hVi:l:u:U:d:e:r:sq:t:zc:")) != EOF) {
 		switch(opt) {
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
 			return r;
 
 		// receive and process each packet
-ProfilerStart("prof.log");
+        // ProfilerStart("prof.log");
 		while(!ut->stop_ubertooth) {
 		      if (end_prog)
 		      {
@@ -238,8 +238,8 @@ ProfilerStart("prof.log");
 		      }
 		      ubertooth_bulk_receive(ut, cb_rx, pn);
 		}
-printf("Exiting!\n");
-ProfilerStop();
+
+        // ProfilerStop();
 		ubertooth_bulk_thread_stop();
 
 		ubertooth_stop(ut);
