@@ -70,8 +70,9 @@ endif( ${BUILD_SHARED_LIB} )
 if( ${BUILD_STATIC_LIB} )
 	# Static library
 	message(STATUS "Building static library")
+	find_package (Threads)
 	add_library(ubertooth-static STATIC ${c_sources})
-	target_link_libraries(ubertooth-static ${LIBUBERTOOTH_LIBS})
+	target_link_libraries(ubertooth-static ${LIBUBERTOOTH_LIBS} ${LIBUSB_1_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 	set_target_properties(ubertooth-static PROPERTIES OUTPUT_NAME "ubertooth")
 	set_target_properties(ubertooth-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 	install(TARGETS ubertooth-static

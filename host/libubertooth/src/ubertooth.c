@@ -227,12 +227,14 @@ static void* poll_thread_main(void* arg __attribute__((unused)))
 
 	while (!do_exit) {
 		struct timeval tv = { 1, 0 };
-		r = libusb_handle_events_timeout(NULL, &tv);
+		r = libusb_handle_events_completed(NULL, NULL);
+		//r = libusb_handle_events_timeout(NULL, &tv);
 		if (r < 0) {
-			do_exit = 1;
-			break;
+			//do_exit = 1;
+      printf("Exiting! Not! %d\n",r);
+			//break;
 		}
-		usleep(1);
+		//usleep(1);
 	}
 
 	return NULL;
@@ -245,26 +247,27 @@ int ubertooth_bulk_thread_start()
 	return pthread_create(&poll_thread, NULL, poll_thread_main, NULL);
 }
 
+
 void ubertooth_bulk_thread_stop()
 {
-	do_exit = 1;
+  do_exit = 1;
 
-	pthread_join(poll_thread, NULL);
+  pthread_join(poll_thread, NULL);
 }
 
 int ubertooth_bulk_init(ubertooth_t* ut)
 {
-	int r;
+  int r;
 
-	ut->rx_xfer = libusb_alloc_transfer(0);
-	libusb_fill_bulk_transfer(ut->rx_xfer, ut->devh, DATA_IN, (uint8_t*)fifo_get_write_element(ut->fifo), PKT_LEN, cb_xfer, ut, TIMEOUT);
+  ut->rx_xfer = libusb_alloc_transfer(0);
+  libusb_fill_bulk_transfer(ut->rx_xfer, ut->devh, DATA_IN, (uint8_t*)fifo_get_write_element(ut->fifo), PKT_LEN, cb_xfer, ut, TIMEOUT);
 
-	r = libusb_submit_transfer(ut->rx_xfer);
-	if (r < 0) {
-		fprintf(stderr, "rx_xfer submission: %d\n", r);
-		return -1;
-	}
-	return 0;
+  r = libusb_submit_transfer(ut->rx_xfer);
+  if (r < 0) {
+    fprintf(stderr, "rx_xfer submission: %d\n", r);
+    return -1;
+  }
+  return 0;
 }
 
 void ubertooth_bulk_wait(ubertooth_t* ut)
@@ -275,7 +278,7 @@ void ubertooth_bulk_wait(ubertooth_t* ut)
 
 int ubertooth_bulk_receive(ubertooth_t* ut, rx_callback cb, void* cb_args)
 {
-	if (!fifo_empty(ut->fifo)) {
+	/*if (!fifo_empty(ut->fifo)) {
 		(*cb)(ut, cb_args);
 		if(ut->stop_ubertooth) {
 			if(ut->rx_xfer)
@@ -287,7 +290,20 @@ int ubertooth_bulk_receive(ubertooth_t* ut, rx_callback cb, void* cb_args)
 	} else {
 		usleep(1);
 		return -1;
-	}
+	}*/
+
+  int err = wait_for_pkt(ut->fifo, -1);
+  if (err == 0)
+  {
+    if(ut->stop_ubertooth) {
+      if(ut->rx_xfer)
+        libusb_cancel_transfer(ut->rx_xfer);
+      return 1;
+    }
+    (*cb)(ut, cb_args);
+    fflush(stderr);
+  }
+  return 0;
 }
 
 static int stream_rx_usb(ubertooth_t* ut, rx_callback cb, void* cb_args)

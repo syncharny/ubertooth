@@ -23,6 +23,7 @@
 #define __UBERTOOTH_FIFO_H__
 
 #include "ubertooth_control.h"
+#include <semaphore.h>
 
 // set fifo size to 1000000 elements or 64 MByte
 #define FIFO_SIZE 1000000
@@ -31,11 +32,14 @@ typedef struct {
 	usb_pkt_rx packets[FIFO_SIZE];
 	size_t read_ptr;
 	size_t write_ptr;
+  sem_t* lock;
+  sem_t* pkt_present;
 } fifo_t;
 
 fifo_t* fifo_init();
 
 void fifo_inc_write_ptr(fifo_t* fifo);
+int wait_for_pkt(fifo_t* fifo, int seconds);
 
 void fifo_push(fifo_t* fifo, const usb_pkt_rx* packet);
 usb_pkt_rx fifo_pop(fifo_t* fifo);
