@@ -34,7 +34,6 @@ void sig_handler(int signo)
 {
   if (signo == SIGUSR1)
   {
-    printf("Caught Signal\n");
     end_prog++;
   }
 }
@@ -232,11 +231,14 @@ int main(int argc, char* argv[])
 		// receive and process each packet
         // ProfilerStart("prof.log");
 		while(!ut->stop_ubertooth) {
-		      if (end_prog)
+		      if (!end_prog)
+          {
+            ubertooth_bulk_receive(ut, cb_rx, pn);
+          }
+          else
 		      {
 			      ut->stop_ubertooth++;
 		      }
-		      ubertooth_bulk_receive(ut, cb_rx, pn);
 		}
 
         // ProfilerStop();
